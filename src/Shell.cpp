@@ -9,10 +9,8 @@ void Shell::run() {
   using namespace std;
 
   while (true) {
-    cout << "ishell> " << flush;
-
-    string line;
-    getline(cin, line);
+    displayPrompt();
+    string line = readInput();
 
     if (line.empty()) {
       continue;
@@ -24,4 +22,14 @@ void Shell::run() {
 
     cout << line << '\n';
   }
+}
+
+std::string Shell::readInput() {
+  std::string input;
+  std::getline(std::cin, input);
+  return input;
+}
+
+void Shell::displayPrompt() {
+  std::cout << Shell::PROMPT_TITLE << "> " << std::flush;
 }
