@@ -7,8 +7,9 @@ Shell::Shell() = default;
 
 void Shell::run() {
   using namespace std;
+
   while (true) {
-    cout << "ishell> ";
+    cout << "ishell> " << flush;
 
     string line;
     getline(cin, line);
