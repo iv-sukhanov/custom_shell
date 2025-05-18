@@ -1,6 +1,10 @@
 #include <iostream>
 
+#include "Shell.hpp"
+
 int main() {
-  std::cout << "Hello world";
+  Shell shell;
+  shell.run();
+
   return 0;
 }
