@@ -15,7 +15,7 @@ add_executable(cshell
     src/Shell.cpp
     # src/Parser.cpp
     # src/Command.cpp
-    # src/Executor.cpp
+    src/Executor.cpp
 )
 
 # (Optional) Add test files
