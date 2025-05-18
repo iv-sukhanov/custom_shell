@@ -1,5 +1,4 @@
-#ifndef PARSER
-#define PARSER
+#pragma once
 
 #include <memory>
 #include <string>
@@ -11,5 +10,3 @@ class Parser {
  public:
   std::vector<std::unique_ptr<Command>> parse(const std::string&);
 };
-
-#endif  // !PARSER

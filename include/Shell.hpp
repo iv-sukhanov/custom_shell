@@ -1,5 +1,4 @@
-#ifndef SHELL
-#define SHELL
+#pragma once
 
 #include <memory>
 
@@ -14,5 +13,3 @@ class Shell {
   std::unique_ptr<Parser> parser;
   std::unique_ptr<Executor> executor;
 };
-
-#endif  // !SHELL

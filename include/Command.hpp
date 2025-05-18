@@ -1,5 +1,4 @@
-#ifndef COMMAND
-#define COMMAND
+#pragma once
 
 #include <optional>
 #include <string>
@@ -15,5 +14,3 @@ class Command {
   std::optional<std::string> inputFile;
   std::optional<std::string> outputFile;
 };
-
-#endif  // !COMMAND

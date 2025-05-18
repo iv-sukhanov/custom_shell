@@ -1,6 +1,3 @@
-#ifndef EXECUTOR
-#define EXECUTOR
+#pragma once
 
 class Executor {};
-
-#endif  // !EXECUTOR
