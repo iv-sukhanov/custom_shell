@@ -12,11 +12,11 @@ void Executor::execute(Command& cmd) const {
   pid_t pid = fork();
 
   if (pid == 0) {
-    std::cout << "child" << '\n';
+    std::cout << pid << " child" << '\n';
   } else if (pid > 0) {
-    int* status;
-    waitpid(pid, status, 0);
-    std::cout << "parent, wait status: " << *status;
+    int status;
+    waitpid(pid, &status, 0);
+    std::cout << pid << " parent, wait status: " << status;
   } else {
     std::cerr << "fork failed";
   }
