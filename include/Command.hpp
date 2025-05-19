@@ -7,6 +7,8 @@
 class Command {
  public:
   Command(std::string name, std::vector<std::string> args);
+  std::string getName() const;
+  std::vector<std::string> getArgs() const;
 
  private:
   std::string name;

@@ -11,7 +11,7 @@ int main() {
   shell.run();
 
   Executor exec;
-  Command test("test", std::vector<std::string>{});
+  Command test("ls", std::vector<std::string>{"-a"});
   exec.execute(test);
 
   return 0;
