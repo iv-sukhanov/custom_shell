@@ -8,5 +8,6 @@
 
 class Parser {
  public:
+  Parser();
   std::vector<std::unique_ptr<Command>> parse(const std::string&);
 };

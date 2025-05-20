@@ -13,7 +13,7 @@ add_executable(cshell
     src/main.cpp
     src/dummy.cpp
     src/Shell.cpp
-    # src/Parser.cpp
+    src/Parser.cpp
     src/Command.cpp
     src/Executor.cpp
 )
