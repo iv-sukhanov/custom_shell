@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-include_directories(include)
+include_directories(include include/utils)
 
 add_executable(cshell
     src/main.cpp
@@ -18,6 +18,4 @@ add_executable(cshell
     src/Executor.cpp
 )
 
-# (Optional) Add test files
-# add_executable(test_shell tests/test_shell.cpp)
 

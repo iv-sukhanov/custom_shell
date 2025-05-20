@@ -10,20 +10,17 @@
 #include "Shell.hpp"
 
 int main() {
-  // Shell shell;
-  // shell.run();
-  //
-  // Executor exec;
-  // Command test("ls", std::vector<std::string>{"-a"});
-  // exec.execute(test);
+    // Shell shell;
+    // shell.run();
+    //
+    // Executor exec;
+    // Command test("ls", std::vector<std::string>{"-a"});
+    // exec.execute(test);
 
-  Parser parser;
-  std::string line = "ls  -la ./temp  	 >  \n  ./somewhere";
-  auto commands = parser.parse(line);
-  std::cout << commands.front()->getName() << '\n';
-  auto firstCommand = (*commands.front()).getArgs();
-  std::copy(begin(firstCommand), end(firstCommand),
-            std::ostream_iterator<std::string>{std::cout, ", "});
+    Parser parser;
+    std::string line = "ls  -la ./temp  	 >  \n  ./somewhere";
+    auto commands = parser.parse(line);
+    auto firstCommand = (*commands.front()).getArgs();
 
-  return 0;
+    return 0;
 }
