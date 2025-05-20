@@ -2,21 +2,23 @@
 
 #include <memory>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 #include "Executor.hpp"
 #include "Parser.hpp"
 
 class Shell {
- public:
-  Shell();
-  void run();
+   public:
+    Shell();
+    void run();
 
- private:
-  inline static const char* PROMPT_TITLE = "ishell";
+   private:
+    inline static const char* PROMPT_TITLE = "ishell";
 
-  static std::string readInput();
-  static void displayPrompt();
+    static std::string readInput();
+    static void displayPrompt();
 
-  std::unique_ptr<Parser> parser;
-  std::unique_ptr<Executor> executor;
+    std::unique_ptr<Parser> parser;
+    std::unique_ptr<Executor> executor;
 };

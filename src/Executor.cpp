@@ -4,6 +4,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <cstdio>
 #include <iostream>
 #include <vector>
 
@@ -35,13 +36,14 @@ void Executor::execute(Command &cmd) const {
         cout << '\n';
         execvp(cmd.getName().c_str(), execArgs.data());
 
-        // TODO handle error
+        std::perror("error executing the command: ");
+        _exit(1);
     } else if (pid > 0) {
         int status;
         waitpid(pid, &status, 0);
         // TODO handle statuses
         std::cout << pid << " parent, wait status: " << status << "\n";
     } else {
-        std::cerr << "fork failed";
+        std::perror("error creating a child process:");
     }
 }
