@@ -1,4 +1,6 @@
+#include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <string>
 #include <vector>
 
@@ -17,7 +19,11 @@ int main() {
 
   Parser parser;
   std::string line = "ls  -la ./temp  	 >  \n  ./somewhere";
-  parser.parse(line);
+  auto commands = parser.parse(line);
+  std::cout << commands.front()->getName() << '\n';
+  auto firstCommand = (*commands.front()).getArgs();
+  std::copy(begin(firstCommand), end(firstCommand),
+            std::ostream_iterator<std::string>{std::cout, ", "});
 
   return 0;
 }

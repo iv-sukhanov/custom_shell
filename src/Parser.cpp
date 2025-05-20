@@ -46,4 +46,8 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string &line) {
   // TODO aslo add the last piece
   unique_ptr<Command> parsedCommand = make_unique<Command>(
       pieces.front(), vector<string>{begin(pieces) + 1, end(pieces)});
+  // vector<unique_ptr<Command>> output{move(parsedCommand)};
+  vector<unique_ptr<Command>> output{};
+  output.push_back(move(parsedCommand));
+  return output;
 }
