@@ -22,5 +22,5 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string &line) {
     vector<unique_ptr<Command>> output;
     output.push_back(make_unique<Command>(pieces.front(), vector<string>{begin(pieces) + 1, end(pieces)}));
 
-    return output;
+    return move(output);
 }

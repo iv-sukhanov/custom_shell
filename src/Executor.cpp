@@ -16,8 +16,6 @@ void Executor::execute(Command &cmd) const {
 
     pid_t pid = fork();
     if (pid == 0) {
-        std::cout << pid << " child" << '\n';
-
         string commandName = cmd.getName();
         vector<string> commandArgs(cmd.getArgs());
 
@@ -42,7 +40,7 @@ void Executor::execute(Command &cmd) const {
         int status;
         waitpid(pid, &status, 0);
         // TODO handle statuses
-        std::cout << pid << " parent, wait status: " << status;
+        std::cout << pid << " parent, wait status: " << status << "\n";
     } else {
         std::cerr << "fork failed";
     }

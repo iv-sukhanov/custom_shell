@@ -10,17 +10,8 @@
 #include "Shell.hpp"
 
 int main() {
-    // Shell shell;
-    // shell.run();
-    //
-    // Executor exec;
-    // Command test("ls", std::vector<std::string>{"-a"});
-    // exec.execute(test);
-
-    Parser parser;
-    std::string line = "ls  -la ./temp  	 >  \n  ./somewhere";
-    auto commands = parser.parse(line);
-    auto firstCommand = (*commands.front()).getArgs();
+    Shell shell;
+    shell.run();
 
     return 0;
 }
