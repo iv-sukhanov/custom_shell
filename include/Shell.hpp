@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include <vector>
 
 #include "Executor.hpp"
@@ -14,7 +13,7 @@ class Shell {
     void run();
 
    private:
-    inline static const char* PROMPT_TITLE = "ishell";
+    static const char* PROMPT_TITLE;
 
     static std::string readInput();
     static void displayPrompt();

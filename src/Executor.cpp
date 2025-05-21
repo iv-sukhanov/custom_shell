@@ -17,7 +17,7 @@ void Executor::execute(Command &cmd) const {
 
     pid_t pid = fork();
     if (pid == 0) {
-        string commandName = cmd.getName();
+        const string commandName = cmd.getName();
         vector<string> commandArgs(cmd.getArgs());
 
         vector<char *> execArgs;
@@ -34,7 +34,7 @@ void Executor::execute(Command &cmd) const {
             cout << execArgs.at(i) << " ";
         }
         cout << '\n';
-        execvp(cmd.getName().c_str(), execArgs.data());
+        execv(cmd.getName().c_str(), execArgs.data());
 
         std::perror("error executing the command: ");
         _exit(1);

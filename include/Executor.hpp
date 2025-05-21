@@ -3,7 +3,7 @@
 #include "Command.hpp"
 
 class Executor {
- public:
-  Executor();
-  void execute(Command& cmd) const;
+   public:
+    Executor();
+    void execute(Command& cmd) const;
 };

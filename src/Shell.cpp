@@ -11,6 +11,8 @@ Shell::Shell() {
     this->executor = std::make_unique<Executor>();
 };
 
+const char* Shell::PROMPT_TITLE = "ishell";
+
 void Shell::run() {
     using namespace std;
 
@@ -27,7 +29,7 @@ void Shell::run() {
         }
 
         auto commands = parser->parse(line);
-        for (auto& command : commands) {
+        for (const auto& command : commands) {
             executor->execute(*command);
         }
     }
