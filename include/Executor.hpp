@@ -12,7 +12,7 @@ class Executor {
 
    private:
     static bool isBuiltin(const Command& cmd);
-    void executeBuiltin(const Command& cmg);
+    void executeBuiltin(const Command& cmd);
     void executeExternal(const Command& cmd) const;
 
     using Args = std::vector<std::string>;
