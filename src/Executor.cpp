@@ -20,7 +20,7 @@ void Executor::execute(Command &cmd) {
     }
 }
 
-bool Executor::isBuiltin(const Command &cmd) const {
+bool Executor::isBuiltin(const Command &cmd) {
     return builtinCommands.find(cmd.getName()) != end(builtinCommands);
 }
 
@@ -58,7 +58,8 @@ void Executor::executeExternal(const Command &cmd) const {
             cout << execArgs.at(i) << " ";
         }
         cout << '\n';
-        execv(cmd.getName().c_str(), execArgs.data());
+        string executableName = getAbsolutePath(commandName);
+        execv(executableName.c_str(), execArgs.data());
 
         std::perror("error executing the command: ");
         _exit(1);
@@ -89,6 +90,24 @@ void Executor::cd(const Args &cmd) {
     }
 }
 
+void Executor::path(const Args &cmd) {
+    if (cmd.empty()) {
+        searchPath.clear();
+        return;
+    }
+
+    for (int i = 0; i < cmd.size(); i++) {
+        const std::string &path = cmd[i];
+
+        if (path.empty() || path.front() != '/' || path.back() == '/') {
+            std::cerr << "path: invalid path at " << i << " position (ignored)\n";
+            continue;
+        }
+
+        searchPath.push_back(path);
+    }
+}
+
 void Executor::exit(const Args &cmd) {
     if (!cmd.empty()) {
         std::cerr << "exit: wrong number of arguments\n";
@@ -99,6 +118,12 @@ void Executor::exit(const Args &cmd) {
     std::exit(0);
 }
 
-void Executor::path(const Args &cmd) {
-    // TODO
+std::string Executor::getAbsolutePath(const std::string &cmd) const {
+    for (const auto &path : searchPath) {
+        std::string fullPath = path + "/" + cmd;
+        if (access(fullPath.c_str(), X_OK) == 0) {
+            return fullPath;
+        }
+    }
+    return cmd;
 }
