@@ -24,10 +24,6 @@ void Shell::run() {
             continue;
         }
 
-        if (line == "exit") {
-            return;
-        }
-
         auto commands = parser->parse(line);
         for (const auto& command : commands) {
             executor->execute(*command);
