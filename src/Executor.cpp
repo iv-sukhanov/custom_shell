@@ -57,7 +57,7 @@ void Executor::executeExternal(const Command &cmd) const {
         for (int i = 1; i < execArgs.size() - 1; i++) {
             cout << execArgs.at(i) << " ";
         }
-        cout << '\n';
+        cout << '\n' << "Redirecting output to " << cmd.getOutputRedirect().value_or(" <none> ") << endl;
         string executableName = getAbsolutePath(commandName);
         execv(executableName.c_str(), execArgs.data());
 
