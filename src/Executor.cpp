@@ -1,5 +1,6 @@
 #include "Executor.hpp"
 
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -31,7 +32,7 @@ void Executor::executeBuiltin(const Command &cmd) {
         const auto args = cmd.getArgs();
         (this->*function)(args);
     } else {
-        std::cerr << "Unknown builtin command: " << cmd.getName() << '\n';
+        throw std::runtime_error("unknown builtin command");
     }
 }
 
@@ -39,37 +40,50 @@ void Executor::executeExternal(const Command &cmd) const {
     using namespace std;
 
     pid_t pid = fork();
+
     if (pid == 0) {
-        const string commandName = cmd.getName();
+        string executableName = lookupPath(cmd.getName());
         vector<string> commandArgs(cmd.getArgs());
+        vector<char *> executableArgs;
+        executableArgs.reserve(commandArgs.size() + 2);
 
-        vector<char *> execArgs;
-        execArgs.reserve(commandArgs.size() + 2);
-
-        execArgs.push_back(const_cast<char *>(commandName.c_str()));
+        executableArgs.push_back(const_cast<char *>(executableName.c_str()));
         for (const string &arg : commandArgs) {
-            execArgs.push_back(const_cast<char *>(arg.c_str()));
+            executableArgs.push_back(const_cast<char *>(arg.c_str()));
         }
-        execArgs.push_back(nullptr);
+        executableArgs.push_back(nullptr);  // null terminator
 
         // debug
-        cout << "executing " << commandName << " with args: ";
-        for (int i = 1; i < execArgs.size() - 1; i++) {
-            cout << execArgs.at(i) << " ";
+        cout << "executing " << executableName << " with args: ";
+        for (int i = 1; i < executableArgs.size() - 1; i++) {
+            cout << executableArgs.at(i) << " ";
         }
         cout << '\n' << "Redirecting output to " << cmd.getOutputRedirect().value_or(" <none> ") << endl;
-        string executableName = getAbsolutePath(commandName);
-        execv(executableName.c_str(), execArgs.data());
 
-        std::perror("error executing the command: ");
+        if (const string &file = cmd.getOutputRedirect().value_or(""); !file.empty()) {
+            const int permissions = 0644;
+            const int fileDescriptior = open(file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, permissions);
+
+            if (fileDescriptior == -1 || dup2(fileDescriptior, STDOUT_FILENO) == -1 ||
+                dup2(fileDescriptior, STDERR_FILENO) == -1) {
+                perror("file redirection failed");
+            } else {
+                close(fileDescriptior);
+            }
+        }
+
+        execv(executableName.c_str(), executableArgs.data());
+
+        std::perror("error executing the command");
         _exit(1);
     } else if (pid > 0) {
         int status;
         waitpid(pid, &status, 0);
-        // TODO handle statuses
+
+        // debug
         std::cout << pid << " parent, wait status: " << status << "\n";
     } else {
-        std::perror("error creating a child process:");
+        std::perror("error creating a child process");
     }
 }
 
@@ -118,7 +132,7 @@ void Executor::exit(const Args &cmd) {
     std::exit(0);
 }
 
-std::string Executor::getAbsolutePath(const std::string &cmd) const {
+std::string Executor::lookupPath(const std::string &cmd) const {
     for (const auto &path : searchPath) {
         std::string fullPath = path + "/" + cmd;
         if (access(fullPath.c_str(), X_OK) == 0) {

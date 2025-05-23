@@ -20,7 +20,7 @@ class Executor {
     static const std::unordered_map<std::string_view, BuiltinFunction> builtinCommands;
 
     std::vector<std::string> searchPath;
-    std::string getAbsolutePath(const std::string& cmd) const;
+    std::string lookupPath(const std::string& cmd) const;
 
     void cd(const Args& cmd);
     void exit(const Args& cmd);
