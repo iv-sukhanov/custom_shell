@@ -28,3 +28,11 @@ std::optional<std::string> Command::getOutputRedirect() const {
 std::optional<std::string> Command::getInputRedirect() const {
     return this->inputFile;
 }
+
+void Command::setParallel(bool inParallel) {
+    this->inParallel = inParallel;
+}
+
+bool Command::isParallel() {
+    return this->inParallel;
+}

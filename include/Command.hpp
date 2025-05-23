@@ -13,10 +13,13 @@ class Command {
     void setInputRedirect(const std::string& file);
     std::optional<std::string> getOutputRedirect() const;
     std::optional<std::string> getInputRedirect() const;
+    void setParallel(bool);
+    bool isParallel();
 
    private:
     std::string name;
     std::vector<std::string> args;
     std::optional<std::string> inputFile;
     std::optional<std::string> outputFile;
+    bool inParallel;
 };

@@ -31,7 +31,7 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
     copy(begin(jobs), end(jobs), ostream_iterator<string>{cout, "# #"});
     cout << endl;
 
-    vector<unique_ptr<Command>> output;
+    vector<unique_ptr<Command>> parsedCommands;
     size_t numberOfJobs = jobs.size();
     for (int i = 0; i < numberOfJobs; i++) {
         const string& job(jobs.at(i));
@@ -56,24 +56,24 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
         utils::split(begin(command), end(command), begin(spaceSymbols), end(spaceSymbols),
                      back_inserter(pieces), retrieveStringFromIters);
 
-        output.push_back(
+        unique_ptr<Command> currCommand(
             make_unique<Command>(pieces.front(), vector<string>{next(begin(pieces)), end(pieces)}));
 
         if (withRedirection) {
-            output.back()->setOutputRedirect(utils::trim(commandParts->back(), spaceSymbols));
+            currCommand->setOutputRedirect(utils::trim(commandParts->back(), spaceSymbols));
         }
+        currCommand->setParallel(inParallel);
 
-        if (inParallel) {
-            // TODO set parallel flag
-        }
+        parsedCommands.push_back(move(currCommand));
     }
 
-    for (const auto& el : output) {
+    // debug
+    for (const auto& el : parsedCommands) {
         cout << el->getName() << '\n' << "#";
         auto args = el->getArgs();
         copy(begin(args), end(args), ostream_iterator<string>{cout, "# #"});
         cout << "\nRedirected to " << el->getOutputRedirect().value_or("none") << endl;
     }
 
-    return move(output);
+    return move(parsedCommands);
 }
