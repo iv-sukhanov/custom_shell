@@ -73,7 +73,8 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
         cout << el->getName() << '\n' << "#";
         auto args = el->getArgs();
         copy(begin(args), end(args), ostream_iterator<string>{cout, "# #"});
-        cout << "\nRedirected to " << el->getOutputRedirect().value_or("none") << endl;
+        cout << "\nRedirected to " << el->getOutputRedirect().value_or("none") << '\n'
+             << "Run in parallel: " << (el->isParallel() ? "yes" : "no") << endl;
     }
 
     return move(parsedCommands);
