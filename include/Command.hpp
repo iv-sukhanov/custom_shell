@@ -14,7 +14,7 @@ class Command {
     std::optional<std::string> getOutputRedirect() const;
     std::optional<std::string> getInputRedirect() const;
     void setParallel(bool);
-    bool isParallel();
+    bool isParallel() const;
 
    private:
     std::string name;

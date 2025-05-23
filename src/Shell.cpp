@@ -17,6 +17,7 @@ void Shell::run() {
     using namespace std;
 
     while (true) {
+        std::cout << "\nprompt display\n";
         displayPrompt();
         string line = readInput();
 

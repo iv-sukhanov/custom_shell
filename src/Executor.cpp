@@ -36,7 +36,7 @@ void Executor::executeBuiltin(const Command &cmd) {
     }
 }
 
-void Executor::executeExternal(const Command &cmd) const {
+void Executor::executeExternal(const Command &cmd) {
     using namespace std;
 
     pid_t pid = fork();
@@ -78,7 +78,15 @@ void Executor::executeExternal(const Command &cmd) const {
         _exit(1);
     } else if (pid > 0) {
         int status;
+        if (cmd.isParallel()) {
+            this->backgroundProcesses.push_back(pid);  // TODO make separate func
+            std::cout << pid << " pushed to background"
+                      << "\n";
+            return;
+        }
+        std::cout << "starting to wait\n";
         waitpid(pid, &status, 0);
+        std::cout << "finishing to wait\n";
 
         // debug
         std::cout << pid << " parent, wait status: " << status << "\n";

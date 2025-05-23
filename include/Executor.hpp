@@ -13,7 +13,7 @@ class Executor {
    private:
     static bool isBuiltin(const Command& cmd);
     void executeBuiltin(const Command& cmd);
-    void executeExternal(const Command& cmd) const;
+    void executeExternal(const Command& cmd);
 
     using Args = std::vector<std::string>;
     using BuiltinFunction = void (Executor::*)(const Args&);
@@ -21,6 +21,7 @@ class Executor {
 
     std::vector<std::string> searchPath;
     std::string lookupPath(const std::string& cmd) const;
+    std::vector<pid_t> backgroundProcesses;
 
     void cd(const Args& cmd);
     void exit(const Args& cmd);

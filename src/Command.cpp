@@ -33,6 +33,6 @@ void Command::setParallel(bool inParallel) {
     this->inParallel = inParallel;
 }
 
-bool Command::isParallel() {
+bool Command::isParallel() const {
     return this->inParallel;
 }
