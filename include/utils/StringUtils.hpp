@@ -1,6 +1,10 @@
 #pragma once
 
 #include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <ostream>
+#include <regex>
 
 namespace utils {
 
