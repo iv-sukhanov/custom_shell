@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "ParseUtils.hpp"
@@ -38,19 +39,19 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
         auto redirectSymb = find(begin(job), end(job), '>');
         bool withRedirection = redirectSymb != end(job);
         bool inParallel = i < numberOfJobs - 1 || isLastParallel;
-        unique_ptr<vector<string>> commandParts;
+        unique_ptr<pair<string, string>> commandAndRedirection;
 
         if (withRedirection) {
-            commandParts = make_unique<vector<string>>();
-            utils::split(begin(job), end(job), '>', back_inserter(*commandParts), retrieveStringFromIters);
+            pair<string, string> commandWithRedirection =
+                utils::separateRedirection(begin(job), end(job), retrieveStringFromIters);
+            commandAndRedirection = make_unique<pair<string, string>>(move(commandWithRedirection));
         }
 
-        if (withRedirection && !commandParts) {
+        if (withRedirection && !commandAndRedirection) {
             throw runtime_error("parse: nullptr commandParts with set redirection flag");
         }
 
-        const string& command =
-            withRedirection ? commandParts->front() : job;  // TODO consider using std::pair
+        const string& command = withRedirection ? commandAndRedirection->first : job;
         vector<string> pieces;
         const string spaceSymbols = " \n\t";
         utils::split(begin(command), end(command), begin(spaceSymbols), end(spaceSymbols),
@@ -60,7 +61,7 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
             make_unique<Command>(pieces.front(), vector<string>{next(begin(pieces)), end(pieces)}));
 
         if (withRedirection) {
-            currCommand->setOutputRedirect(utils::trim(commandParts->back(), spaceSymbols));
+            currCommand->setOutputRedirect(utils::trim(commandAndRedirection->second, spaceSymbols));
         }
         currCommand->setParallel(inParallel);
 

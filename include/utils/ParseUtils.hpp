@@ -3,6 +3,11 @@
 #include <iostream>
 #include <iterator>
 #include <regex>
+#include <stdexcept>
+#include <string>
+#include <utility>
+
+#include "StringUtils.hpp"
 
 namespace utils {
 
@@ -33,4 +38,15 @@ bool splitJobs(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& r
     return isLastParallel;
 }
 
+template <typename InIt, typename F>
+std::pair<std::string, std::string> separateRedirection(InIt iter, InIt iterEnd, F binFunc) {
+    const char redirectionSymbol('>');
+    std::vector<std::string> splitedLine;
+    split(iter, iterEnd, redirectionSymbol, std::back_inserter(splitedLine), binFunc);
+
+    if (splitedLine.size() != 2) {
+        throw new std::runtime_error("invalid number of result tockens in redirecion splited line");
+    }
+    return {move(splitedLine.front()), move(splitedLine.back())};
+}
 }  // namespace utils
