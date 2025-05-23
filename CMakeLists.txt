@@ -16,6 +16,7 @@ add_executable(cshell
     src/Parser.cpp
     src/Command.cpp
     src/Executor.cpp
+	src/utils/StringUtils.cpp
 )
 
 

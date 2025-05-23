@@ -46,14 +46,6 @@ InIt split(InIt iter, InIt iterEnd, SplitSymb splitSymb, OutIt outputIter, F bin
     return iterEnd;
 }
 
-std::string trim(const std::string& str, std::string_view unwantedSynbols) {
-    size_t first = str.find_first_not_of(unwantedSynbols);
-    if (first == std::string::npos) {
-        return "";
-    }
-
-    size_t last = str.find_last_not_of(unwantedSynbols);
-    return str.substr(first, last - first + 1);
-}
+std::string trim(const std::string& str, std::string_view unwantedSynbols);
 
 }  // namespace utils
