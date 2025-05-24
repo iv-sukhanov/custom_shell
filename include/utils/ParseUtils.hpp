@@ -44,49 +44,33 @@ template <typename OutIt>
 void splitArgs(const std::string& input, OutIt outputIter) {
     std::istringstream iss{input};
     std::string tocken;
+
     char quote;
     char currChar;
-    bool escape;
+    bool quoted;
 
     while (iss >> std::ws) {
         if (iss.peek() == EOF) {
             break;
         }
 
-        escape = false;
-        tocken.clear();
-
-        if (iss.peek() == '"' || iss.peek() == '\'') {
+        if ((quoted = iss.peek() == '"' || iss.peek() == '\'')) {
             iss.get(quote);
+        }
 
-            while (iss.get(currChar)) {
-                if (escape) {
-                    tocken += currChar;
-                    escape = false;
-                } else if (currChar == '\\') {
-                    escape = true;
-                } else if (currChar == quote) {
-                    break;
-                } else {
-                    tocken += currChar;
-                }
-            }
-
-        } else {
-            while (iss.get(currChar) && !std::isspace(currChar)) {
-                if (escape) {
-                    tocken += currChar;
-                    escape = false;
-                } else if (currChar == '\\') {
-                    escape = true;
-                } else {
-                    tocken += currChar;
-                }
+        while (iss.get(currChar)) {
+            if (currChar == '\\' && iss.get(currChar)) {
+                tocken += currChar;
+            } else if (quoted && currChar == quote || !quoted && std::isspace(currChar)) {
+                break;
+            } else {
+                tocken += currChar;
             }
         }
 
-        *outputIter++ = tocken;
         std::cout << "adding this tocken: !" << tocken << "!\n";
+        *outputIter++ = move(tocken);
+        tocken.clear();
     }
 }
 
