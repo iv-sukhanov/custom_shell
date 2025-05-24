@@ -2,7 +2,9 @@
 
 #include <csignal>
 #include <exception>
+#include <fstream>
 #include <iostream>
+#include <istream>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -22,15 +24,53 @@ void Shell::run() {
 
     while (true) {
         displayPrompt();
-        string line = readInput();
+        const string& line = readInput();
 
         if (line.empty()) {
             continue;
         }
 
-        vector<unique_ptr<Command>> commands;
+        handleInputLine(line);
+    }
+}
+
+void Shell::run(const std::string& filename) {
+    using namespace std;
+
+    fstream file{filename, std::ios::in};
+    if (!file) {
+        cerr << "There is no file '" << filename << "'" << '\n';
+        return;
+    }
+
+    string line;
+    vector<unique_ptr<Command>> commands;
+    while (getline(file >> ws, line, '\n')) {
+        if (line.empty()) {
+            continue;
+        }
+        cout << "1" << line << "1" << '\n';
+        handleInputLine(line);
+    }
+}
+
+void Shell::handleInputLine(const std::string& line) {
+    using namespace std;
+
+    vector<unique_ptr<Command>> commands;
+    try {
+        commands = parser->parse(line);
+    } catch (exception& e) {
+        cerr << "error: " << e.what();
+        return;
+    } catch (...) {
+        cerr << "unknown exception";
+        return;
+    }
+
+    for (const auto& command : commands) {
         try {
-            commands = parser->parse(line);
+            executor->execute(*command);
         } catch (exception& e) {
             cerr << "error: " << e.what();
             continue;
@@ -38,24 +78,7 @@ void Shell::run() {
             cerr << "unknown exception";
             continue;
         }
-
-        for (const auto& command : commands) {
-            try {
-                executor->execute(*command);
-                cout << "finished" << endl;
-            } catch (exception& e) {
-                cerr << "error: " << e.what();
-                continue;
-            } catch (...) {
-                cerr << "unknown exception";
-                continue;
-            }
-        }
     }
-}
-
-void Shell::run(const std::string& filename) {
-    std::cout << "batchmode called for " << filename;
 }
 
 std::string Shell::readInput() {

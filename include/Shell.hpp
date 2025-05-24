@@ -16,6 +16,8 @@ class Shell {
    private:
     static const char* PROMPT_TITLE;
 
+    void handleInputLine(const std::string& line);
+
     static std::string readInput();
     static void displayPrompt();
 
