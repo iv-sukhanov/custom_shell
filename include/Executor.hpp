@@ -15,6 +15,9 @@ class Executor {
     void executeBuiltin(const Command& cmd);
     void executeExternal(const Command& cmd);
 
+    std::pair<const char*, char**> getExecutableArgs(const Command& cmd);
+    static void handleRedirect(const Command& cmd);
+
     using Args = std::vector<std::string>;
     using BuiltinFunction = void (Executor::*)(const Args&);
     static const std::unordered_map<std::string_view, BuiltinFunction> builtinCommands;

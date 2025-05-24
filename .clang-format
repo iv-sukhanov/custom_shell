@@ -3,4 +3,5 @@ IndentWidth: 4
 ColumnLimit: 110
 AllowShortFunctionsOnASingleLine: None
 AllowShortIfStatementsOnASingleLine: true
-
+PointerAlignment: Left
+DerivePointerAlignment: false

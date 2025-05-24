@@ -9,8 +9,10 @@
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 #include <vector>
 
 #include "Command.hpp"
@@ -19,7 +21,7 @@ Executor::Executor() {
     registerSignalHangler();
 }
 
-void Executor::execute(Command &cmd) {
+void Executor::execute(Command& cmd) {
     if (isBuiltin(cmd)) {
         executeBuiltin(cmd);
     } else {
@@ -27,76 +29,117 @@ void Executor::execute(Command &cmd) {
     }
 }
 
-bool Executor::isBuiltin(const Command &cmd) {
+bool Executor::isBuiltin(const Command& cmd) {
     return builtinCommands.find(cmd.getName()) != end(builtinCommands);
 }
 
-void Executor::executeBuiltin(const Command &cmd) {
+void Executor::executeBuiltin(const Command& cmd) {
     auto builtin = builtinCommands.find(cmd.getName());
     if (builtin != end(builtinCommands)) {
         BuiltinFunction function = builtin->second;
-        const std::vector<std::string> &args = cmd.getArgs();
+        const std::vector<std::string>& args = cmd.getArgs();
         (this->*function)(args);
     } else {
         throw std::invalid_argument("unknown builtin command");
     }
 }
 
-void Executor::executeExternal(const Command &cmd) {
+void Executor::executeExternal(const Command& cmd) {
     using namespace std;
 
     pid_t pid = fork();
 
     if (pid == 0) {
-        string executableName = lookupPath(cmd.getName());
-        vector<string> commandArgs(cmd.getArgs());
-        vector<char *> executableArgs;
-        executableArgs.reserve(commandArgs.size() + 2);
-
-        executableArgs.push_back(const_cast<char *>(executableName.c_str()));
-        for (const string &arg : commandArgs) {
-            executableArgs.push_back(const_cast<char *>(arg.c_str()));
-        }
-        executableArgs.push_back(nullptr);  // null terminator
-
-        // debug
-        cout << "executing " << executableName << " with args: ";
-        for (int i = 1; i < executableArgs.size() - 1; i++) {
-            cout << executableArgs.at(i) << " ";
-        }
-        cout << '\n' << "Redirecting output to " << cmd.getOutputRedirect().value_or(" <none> ") << endl;
-
-        if (const string &file = cmd.getOutputRedirect().value_or(""); !file.empty()) {
-            const int permissions = 0644;
-            const int fileDescriptior = open(file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, permissions);
-
-            if (fileDescriptior == -1 || dup2(fileDescriptior, STDOUT_FILENO) == -1 ||
-                dup2(fileDescriptior, STDERR_FILENO) == -1) {
-                perror("file redirection failed");
-            } else {
-                close(fileDescriptior);
-            }
-        }
-
-        execv(executableName.c_str(), executableArgs.data());
+        pair<const char*, char**> executableArgs = getExecutableArgs(cmd);
+        handleRedirect(cmd);
+        execv(executableArgs.first, executableArgs.second);
 
         std::perror("error executing the command");
         _exit(1);
     } else if (pid > 0) {
         int status;
         if (cmd.isParallel()) {
-            std::cout << pid << " pushed to background"
+            std::cout << "[" << cmd.getName() << "]"
+                      << "[" << pid << "]"
+                      << " pushed to background"
                       << "\n";
             return;
         }
-        std::cout << "starting to wait\n";
         waitpid(pid, &status, 0);
-        std::cout << "finishing to wait\n";
 
-        // debug
-        std::cout << pid << " parent, wait status: " << status << "\n";
+        // std::cout << pid << " parent, wait status: " << status << "\n";
     } else {
-        std::perror("error creating a child process");
+        throw runtime_error("fork: "s + strerror(errno));
+    }
+}
+
+std::pair<const char*, char**> Executor::getExecutableArgs(const Command& cmd) {
+    using namespace std;
+
+    string executableName = lookupPath(cmd.getName());
+    vector<string> commandArgs(cmd.getArgs());
+    vector<char*> executableArgs;
+    executableArgs.reserve(commandArgs.size() + 2);
+
+    executableArgs.push_back(const_cast<char*>(executableName.c_str()));
+    for (const string& arg : commandArgs) {
+        executableArgs.push_back(const_cast<char*>(arg.c_str()));
+    }
+    executableArgs.push_back(nullptr);  // null terminator
+
+    // debug
+    // cout
+    // <<
+    // "executing
+    // "
+    // <<
+    // executableName
+    // <<
+    // "
+    // with
+    // args:
+    // ";
+    // for
+    // (int
+    // i =
+    // 1;
+    // i <
+    // executableArgs.size()
+    // -
+    // 1;
+    // i++)
+    // {
+    //     cout << executableArgs.at(i) << " ";
+    // }
+    // cout
+    // <<
+    // '\n'
+    // <<
+    // "Redirecting
+    // output
+    // to
+    // "
+    // <<
+    // cmd.getOutputRedirect().value_or("
+    // <none>
+    // ")
+    // <<
+    // endl;
+
+    return make_pair(executableName.c_str(), executableArgs.data());
+}
+
+void Executor::handleRedirect(const Command& cmd) {
+    if (const std::string& file = cmd.getOutputRedirect().value_or(""); !file.empty()) {
+        const int permissions = 0644;
+        const int fileDescriptior = open(file.c_str(), O_WRONLY | O_CREAT | O_TRUNC, permissions);
+
+        if (fileDescriptior == -1 || dup2(fileDescriptior, STDOUT_FILENO) == -1 ||
+            dup2(fileDescriptior, STDERR_FILENO) == -1) {
+            perror("file redirection failed");
+        } else {
+            close(fileDescriptior);
+        }
     }
 }
 
@@ -110,12 +153,13 @@ void Executor::registerSignalHangler() {
         perror("sigactoi");
     }
 }
+
 void Executor::reapChildren(int signum) {
     pid_t currPid;
     while ((currPid = waitpid(-1, nullptr, 0)) != -1) {
         std::string str = "Reaped chiled with pid: " + std::to_string(currPid) + "\n";
         str.shrink_to_fit();
-        char *buf = str.data();
+        char* buf = str.data();
         size_t length = str.length();
         write(STDOUT_FILENO, buf, length * sizeof(char));
     }
@@ -127,7 +171,7 @@ const std::unordered_map<std::string_view, Executor::BuiltinFunction> Executor::
     {"path", &Executor::path},
 };
 
-void Executor::cd(const Args &cmd) {
+void Executor::cd(const Args& cmd) {
     if (cmd.size() != 1) {
         std::cerr << "cd: wrong number of arguments\n";
         return;
@@ -138,14 +182,14 @@ void Executor::cd(const Args &cmd) {
     }
 }
 
-void Executor::path(const Args &cmd) {
+void Executor::path(const Args& cmd) {
     if (cmd.empty()) {
         searchPath.clear();
         return;
     }
 
     for (int i = 0; i < cmd.size(); i++) {
-        const std::string &path = cmd[i];
+        const std::string& path = cmd[i];
 
         if (path.empty() || path.front() != '/' || path.back() == '/') {
             std::cerr << "path: invalid path at " << i << " position (ignored)\n";
@@ -156,7 +200,7 @@ void Executor::path(const Args &cmd) {
     }
 }
 
-void Executor::exit(const Args &cmd) {
+void Executor::exit(const Args& cmd) {
     if (!cmd.empty()) {
         std::cerr << "exit: wrong number of arguments\n";
         return;
@@ -166,8 +210,8 @@ void Executor::exit(const Args &cmd) {
     std::exit(0);
 }
 
-std::string Executor::lookupPath(const std::string &cmd) const {
-    for (const auto &path : searchPath) {
+std::string Executor::lookupPath(const std::string& cmd) const {
+    for (const auto& path : searchPath) {
         std::string fullPath = path + "/" + cmd;
         if (access(fullPath.c_str(), X_OK) == 0) {
             return fullPath;
