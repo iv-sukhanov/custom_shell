@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <stdexcept>
 #include <vector>
 
 #include "Command.hpp"
@@ -33,11 +34,11 @@ bool Executor::isBuiltin(const Command &cmd) {
 void Executor::executeBuiltin(const Command &cmd) {
     auto builtin = builtinCommands.find(cmd.getName());
     if (builtin != end(builtinCommands)) {
-        auto function = builtin->second;
-        const auto args = cmd.getArgs();
+        BuiltinFunction function = builtin->second;
+        const std::vector<std::string> &args = cmd.getArgs();
         (this->*function)(args);
     } else {
-        throw std::runtime_error("unknown builtin command");
+        throw std::invalid_argument("unknown builtin command");
     }
 }
 

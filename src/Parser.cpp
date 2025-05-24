@@ -48,35 +48,7 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
             throw e;
         }
 
-        unique_ptr<pair<string, string>> commandAndRedirection;
-        if (withRedirection) {
-            pair<string, string> commandWithRedirection;
-            try {
-                commandWithRedirection = utils::separateRedirection(begin(job), end(job), redirectSymb);
-            } catch (invalid_argument& e) {
-                throw e;
-            }
-
-            commandAndRedirection = make_unique<pair<string, string>>(move(commandWithRedirection));
-        }
-
-        if (withRedirection && !commandAndRedirection) {
-            throw runtime_error("parse: nullptr commandParts with set redirection flag");
-        }
-
-        const string& command = withRedirection ? commandAndRedirection->first : job;
-        vector<string> pieces;
-        utils::splitArgs(command, back_inserter(pieces));
-
-        unique_ptr<Command> currCommand(
-            make_unique<Command>(pieces.front(), vector<string>{next(begin(pieces)), end(pieces)}));
-
-        if (withRedirection) {
-            currCommand->setOutputRedirect(utils::trim(commandAndRedirection->second, spaceSymbols));
-        }
-        currCommand->setParallel(inParallel);
-
-        parsedCommands.push_back(move(currCommand));
+        parsedCommands.push_back(move(composeCommand(job, withRedirection, inParallel)));
     }
 
     // debug
@@ -89,4 +61,38 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
     // }
 
     return move(parsedCommands);
+}
+
+std::unique_ptr<Command> Parser::composeCommand(const std::string& job, bool redirect, bool parallel) {
+    using namespace std;
+
+    unique_ptr<pair<string, string>> commandAndRedirection;
+    if (redirect) {
+        pair<string, string> commandWithRedirection;
+        try {
+            commandWithRedirection = utils::separateRedirection(begin(job), end(job), redirectSymb);
+        } catch (invalid_argument& e) {
+            throw e;
+        }
+
+        commandAndRedirection = make_unique<pair<string, string>>(move(commandWithRedirection));
+    }
+
+    if (redirect && !commandAndRedirection) {
+        throw runtime_error("parse: nullptr commandParts with set redirection flag");
+    }
+
+    const string& command = redirect ? commandAndRedirection->first : job;
+    vector<string> pieces;
+    utils::splitArgs(command, back_inserter(pieces));
+
+    unique_ptr<Command> currCommand(
+        make_unique<Command>(pieces.front(), vector<string>{next(begin(pieces)), end(pieces)}));
+
+    if (redirect) {
+        currCommand->setOutputRedirect(utils::trim(commandAndRedirection->second, spaceSymbols));
+    }
+    currCommand->setParallel(parallel);
+
+    return move(currCommand);
 }
