@@ -36,14 +36,13 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
     size_t numberOfJobs = jobs.size();
     for (int i = 0; i < numberOfJobs; i++) {
         const string& job(jobs.at(i));
-        auto redirectSymb = find(begin(job), end(job), '>');
+        auto redirectSymb = find(begin(job), end(job), '>');  // TODO change to regex
         bool withRedirection = redirectSymb != end(job);
         bool inParallel = i < numberOfJobs - 1 || isLastParallel;
         unique_ptr<pair<string, string>> commandAndRedirection;
 
         if (withRedirection) {
-            pair<string, string> commandWithRedirection =
-                utils::separateRedirection(begin(job), end(job), retrieveStringFromIters);
+            pair<string, string> commandWithRedirection = utils::separateRedirection(begin(job), end(job));
             commandAndRedirection = make_unique<pair<string, string>>(move(commandWithRedirection));
         }
 
@@ -53,13 +52,12 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
 
         const string& command = withRedirection ? commandAndRedirection->first : job;
         vector<string> pieces;
-        const string spaceSymbols = " \n\t";
-        utils::split(begin(command), end(command), begin(spaceSymbols), end(spaceSymbols),
-                     back_inserter(pieces), retrieveStringFromIters);
+        utils::splitArgs(command, back_inserter(pieces));
 
         unique_ptr<Command> currCommand(
             make_unique<Command>(pieces.front(), vector<string>{next(begin(pieces)), end(pieces)}));
 
+        const string spaceSymbols = " \n\t";
         if (withRedirection) {
             currCommand->setOutputRedirect(utils::trim(commandAndRedirection->second, spaceSymbols));
         }

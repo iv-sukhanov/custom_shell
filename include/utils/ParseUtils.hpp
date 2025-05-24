@@ -3,6 +3,7 @@
 #include <iostream>
 #include <iterator>
 #include <regex>
+#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -38,8 +39,29 @@ bool splitJobs(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& r
     return isLastParallel;
 }
 
-template <typename InIt, typename F>
-std::pair<std::string, std::string> separateRedirection(InIt iter, InIt iterEnd, F binFunc) {
+template <typename OutIt>
+void splitArgs(const std::string& input, OutIt outputIter) {
+    std::istringstream iss{input};
+    std::string tocken;
+    char quote;
+
+    while (iss >> std::ws) {
+        if (iss.peek() == EOF) {
+            break;
+        }
+        if (iss.peek() == '"' || iss.peek() == '\'') {
+            quote = iss.get();
+            std::getline(iss, tocken, quote);
+        } else {
+            iss >> tocken;
+        }
+        std::cout << "!" << tocken << "!" << std::endl;  // debug
+        *outputIter++ = tocken;
+    }
+}
+
+template <typename InIt>
+std::pair<std::string, std::string> separateRedirection(InIt iter, InIt iterEnd) {
     std::regex redirectionSymbol("\\s+(>)\\s+");  // mb add an append option
     std::sregex_iterator regexIterBeg = std::sregex_iterator(iter, iterEnd, redirectionSymbol);
     std::sregex_iterator regexIterEnd{};
