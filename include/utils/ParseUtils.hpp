@@ -40,13 +40,20 @@ bool splitJobs(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& r
 
 template <typename InIt, typename F>
 std::pair<std::string, std::string> separateRedirection(InIt iter, InIt iterEnd, F binFunc) {
-    const char redirectionSymbol('>');
-    std::vector<std::string> splitedLine;
-    split(iter, iterEnd, redirectionSymbol, std::back_inserter(splitedLine), binFunc);
+    std::regex redirectionSymbol("\\s+(>)\\s+");  // mb add an append option
+    std::sregex_iterator regexIterBeg = std::sregex_iterator(iter, iterEnd, redirectionSymbol);
+    std::sregex_iterator regexIterEnd{};
 
-    if (splitedLine.size() != 2) {
-        throw new std::runtime_error("invalid number of result tockens in redirecion splited line");
+    if (std::distance(regexIterBeg, regexIterEnd) != 1) {
+        throw std::runtime_error("invalid number of result tockens in redirecion splited line");
     }
-    return {move(splitedLine.front()), move(splitedLine.back())};
+
+    std::cout << (*regexIterBeg)[1] << std::endl;  // debug
+
+    std::string first{iter, next(iter, regexIterBeg->position())};
+    std::string second{next(iter, regexIterBeg->position() + regexIterBeg->length()), iterEnd};
+
+    return {move(first), move(second)};
 }
+
 }  // namespace utils
