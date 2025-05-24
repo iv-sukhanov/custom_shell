@@ -5,13 +5,18 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include <algorithm>
+#include <csignal>
 #include <cstdio>
+#include <cstdlib>
 #include <iostream>
 #include <vector>
 
 #include "Command.hpp"
 
-Executor::Executor() = default;
+Executor::Executor() {
+    registerSignalHangler();
+}
 
 void Executor::execute(Command &cmd) {
     if (isBuiltin(cmd)) {
@@ -79,7 +84,6 @@ void Executor::executeExternal(const Command &cmd) {
     } else if (pid > 0) {
         int status;
         if (cmd.isParallel()) {
-            this->backgroundProcesses.push_back(pid);  // TODO make separate func
             std::cout << pid << " pushed to background"
                       << "\n";
             return;
@@ -92,6 +96,27 @@ void Executor::executeExternal(const Command &cmd) {
         std::cout << pid << " parent, wait status: " << status << "\n";
     } else {
         std::perror("error creating a child process");
+    }
+}
+
+void Executor::registerSignalHangler() {
+    struct sigaction signalAction {};
+    signalAction.sa_handler = reapChildren;
+    sigemptyset(&signalAction.sa_mask);
+    signalAction.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+
+    if (sigaction(SIGCHLD, &signalAction, nullptr) == -1) {
+        perror("sigactoi");
+    }
+}
+void Executor::reapChildren(int signum) {
+    pid_t currPid;
+    while ((currPid = waitpid(-1, nullptr, 0)) != -1) {
+        std::string str = "Reaped chiled with pid: " + std::to_string(currPid) + "\n";
+        str.shrink_to_fit();
+        char *buf = str.data();
+        size_t length = str.length();
+        write(STDOUT_FILENO, buf, length * sizeof(char));
     }
 }
 

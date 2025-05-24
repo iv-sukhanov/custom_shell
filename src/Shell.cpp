@@ -1,5 +1,6 @@
 #include "Shell.hpp"
 
+#include <csignal>
 #include <iostream>
 #include <memory>
 #include <string>

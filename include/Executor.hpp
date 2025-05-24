@@ -21,7 +21,9 @@ class Executor {
 
     std::vector<std::string> searchPath;
     std::string lookupPath(const std::string& cmd) const;
-    std::vector<pid_t> backgroundProcesses;
+
+    void registerSignalHangler();
+    static void reapChildren(int);
 
     void cd(const Args& cmd);
     void exit(const Args& cmd);
