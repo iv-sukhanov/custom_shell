@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cctype>
 #include <iostream>
 #include <iterator>
 #include <regex>
@@ -44,19 +45,48 @@ void splitArgs(const std::string& input, OutIt outputIter) {
     std::istringstream iss{input};
     std::string tocken;
     char quote;
+    char currChar;
+    bool escape;
 
     while (iss >> std::ws) {
         if (iss.peek() == EOF) {
             break;
         }
+
+        escape = false;
+        tocken.clear();
+
         if (iss.peek() == '"' || iss.peek() == '\'') {
-            quote = iss.get();
-            std::getline(iss, tocken, quote);
+            iss.get(quote);
+
+            while (iss.get(currChar)) {
+                if (escape) {
+                    tocken += currChar;
+                    escape = false;
+                } else if (currChar == '\\') {
+                    escape = true;
+                } else if (currChar == quote) {
+                    break;
+                } else {
+                    tocken += currChar;
+                }
+            }
+
         } else {
-            iss >> tocken;
+            while (iss.get(currChar) && !std::isspace(currChar)) {
+                if (escape) {
+                    tocken += currChar;
+                    escape = false;
+                } else if (currChar == '\\') {
+                    escape = true;
+                } else {
+                    tocken += currChar;
+                }
+            }
         }
-        std::cout << "!" << tocken << "!" << std::endl;  // debug
+
         *outputIter++ = tocken;
+        std::cout << "adding this tocken: !" << tocken << "!\n";
     }
 }
 
