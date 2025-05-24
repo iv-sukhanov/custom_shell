@@ -42,22 +42,21 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
 
         bool inParallel = i < numberOfJobs - 1 || isLastParallel;
         bool withRedirection;
-        auto redirectIter = std::sregex_iterator(begin(job), end(job), redirectSymb);
-        switch (size_t occuranceNumb = std::distance(redirectIter, {}); occuranceNumb) {
-            case 0:
-                withRedirection = false;
-                break;
-            case 1:
-                withRedirection = true;
-                break;
-            default:
-                throw std::runtime_error("invalid number of redirections");
-                break;
+        try {
+            withRedirection = utils::isRedirected(begin(job), end(job), redirectSymb);
+        } catch (invalid_argument& e) {
+            throw e;
         }
 
         unique_ptr<pair<string, string>> commandAndRedirection;
         if (withRedirection) {
-            pair<string, string> commandWithRedirection = utils::separateRedirection(begin(job), end(job));
+            pair<string, string> commandWithRedirection;
+            try {
+                commandWithRedirection = utils::separateRedirection(begin(job), end(job), redirectSymb);
+            } catch (invalid_argument& e) {
+                throw e;
+            }
+
             commandAndRedirection = make_unique<pair<string, string>>(move(commandWithRedirection));
         }
 
@@ -81,13 +80,13 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
     }
 
     // debug
-    for (const auto& el : parsedCommands) {
-        cout << el->getName() << '\n' << "#";
-        auto args = el->getArgs();
-        copy(begin(args), end(args), ostream_iterator<string>{cout, "# #"});
-        cout << "\nRedirected to " << el->getOutputRedirect().value_or("none") << '\n'
-             << "Run in parallel: " << (el->isParallel() ? "yes" : "no") << endl;
-    }
+    // for (const auto& el : parsedCommands) {
+    //     cout << el->getName() << '\n' << "#";
+    //     auto args = el->getArgs();
+    //     copy(begin(args), end(args), ostream_iterator<string>{cout, "# #"});
+    //     cout << "\nRedirected to " << el->getOutputRedirect().value_or("none") << '\n'
+    //          << "Run in parallel: " << (el->isParallel() ? "yes" : "no") << endl;
+    // }
 
     return move(parsedCommands);
 }

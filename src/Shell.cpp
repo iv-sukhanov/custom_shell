@@ -1,9 +1,12 @@
 #include "Shell.hpp"
 
 #include <csignal>
+#include <exception>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "Parser.hpp"
 
@@ -26,7 +29,17 @@ void Shell::run() {
             continue;
         }
 
-        auto commands = parser->parse(line);
+        vector<unique_ptr<Command>> commands;
+        try {
+            commands = parser->parse(line);
+        } catch (exception& e) {
+            cerr << "error: " << e.what();
+            continue;
+        } catch (...) {
+            cerr << "unknown exception";
+            continue;
+        }
+
         for (const auto& command : commands) {
             executor->execute(*command);
         }

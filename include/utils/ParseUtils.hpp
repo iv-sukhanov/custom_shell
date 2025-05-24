@@ -13,6 +13,22 @@
 
 namespace utils {
 
+template <typename InIt>
+bool isRedirected(InIt beg, InIt end, const std::regex& regex) {
+    auto redirectIter = std::sregex_iterator(beg, end, regex);
+    switch (size_t occuranceNumb = std::distance(redirectIter, {}); occuranceNumb) {
+        case 0:
+            return false;
+            break;
+        case 1:
+            return true;
+            break;
+        default:
+            throw std::invalid_argument("invalid number of redirections");
+            break;
+    }
+}
+
 template <typename InIt, typename OutIt, typename F>
 bool splitJobs(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& regex, F binFunc) {  // rename
     auto tempIterator = iterBeg;
@@ -68,23 +84,22 @@ void splitArgs(const std::string& input, OutIt outputIter) {
             }
         }
 
-        std::cout << "adding this tocken: !" << tocken << "!\n";
+        // std::cout << "adding this tocken: !" << tocken << "!\n";
         *outputIter++ = move(tocken);
         tocken.clear();
     }
 }
 
 template <typename InIt>
-std::pair<std::string, std::string> separateRedirection(InIt iter, InIt iterEnd) {
-    std::regex redirectionSymbol("\\s+(>)\\s+");  // mb add an append option
-    std::sregex_iterator regexIterBeg = std::sregex_iterator(iter, iterEnd, redirectionSymbol);
+std::pair<std::string, std::string> separateRedirection(InIt iter, InIt iterEnd, const std::regex& regex) {
+    std::sregex_iterator regexIterBeg = std::sregex_iterator(iter, iterEnd, regex);
     std::sregex_iterator regexIterEnd{};
 
     if (std::distance(regexIterBeg, regexIterEnd) != 1) {
-        throw std::runtime_error("invalid number of result tockens in redirecion splited line");
+        throw std::invalid_argument("invalid number of result tockens in redirecion splited line");
     }
 
-    std::cout << (*regexIterBeg)[1] << std::endl;  // debug
+    // std::cout << (*regexIterBeg)[1] << std::endl;  // debug
 
     std::string first{iter, next(iter, regexIterBeg->position())};
     std::string second{next(iter, regexIterBeg->position() + regexIterBeg->length()), iterEnd};
