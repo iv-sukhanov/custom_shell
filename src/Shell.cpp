@@ -54,6 +54,10 @@ void Shell::run() {
     }
 }
 
+void Shell::run(const std::string& filename) {
+    std::cout << "batchmode called for " << filename;
+}
+
 std::string Shell::readInput() {
     std::string input;
     std::getline(std::cin, input);

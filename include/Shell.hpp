@@ -11,6 +11,7 @@ class Shell {
    public:
     Shell();
     void run();
+    void run(const std::string& filename);
 
    private:
     static const char* PROMPT_TITLE;
