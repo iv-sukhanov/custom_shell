@@ -2,6 +2,7 @@
 
 #include <string_view>
 #include <unordered_map>
+#include <vector>
 
 #include "Command.hpp"
 
@@ -15,7 +16,8 @@ class Executor {
     void executeBuiltin(const Command& cmd);
     void executeExternal(const Command& cmd);
 
-    std::pair<const char*, char**> getExecutableArgs(const Command& cmd);
+    std::pair<const char*, char**> getExecutableArgs(const std::string& name,
+                                                     const std::vector<std::string>& args);
     static void handleRedirect(const Command& cmd);
 
     using Args = std::vector<std::string>;

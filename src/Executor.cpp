@@ -50,9 +50,20 @@ void Executor::executeExternal(const Command& cmd) {
     pid_t pid = fork();
 
     if (pid == 0) {
-        pair<const char*, char**> executableArgs = getExecutableArgs(cmd);
+        string executableName = lookupPath(cmd.getName());
+        vector<string> commandArgs(cmd.getArgs());
+
+        vector<char*> executableArgs;
+        executableArgs.reserve(commandArgs.size() + 2);
+
+        executableArgs.push_back(const_cast<char*>(executableName.c_str()));
+        for (const string& arg : commandArgs) {
+            executableArgs.push_back(const_cast<char*>(arg.c_str()));
+        }
+        executableArgs.push_back(nullptr);  // null terminator
+
         handleRedirect(cmd);
-        execv(executableArgs.first, executableArgs.second);
+        execv(executableName.c_str(), executableArgs.data());
 
         std::perror("error executing the command");
         _exit(1);
@@ -67,66 +78,9 @@ void Executor::executeExternal(const Command& cmd) {
         }
         waitpid(pid, &status, 0);
 
-        // std::cout << pid << " parent, wait status: " << status << "\n";
     } else {
         throw runtime_error("fork: "s + strerror(errno));
     }
-}
-
-std::pair<const char*, char**> Executor::getExecutableArgs(const Command& cmd) {
-    using namespace std;
-
-    string executableName = lookupPath(cmd.getName());
-    vector<string> commandArgs(cmd.getArgs());
-    vector<char*> executableArgs;
-    executableArgs.reserve(commandArgs.size() + 2);
-
-    executableArgs.push_back(const_cast<char*>(executableName.c_str()));
-    for (const string& arg : commandArgs) {
-        executableArgs.push_back(const_cast<char*>(arg.c_str()));
-    }
-    executableArgs.push_back(nullptr);  // null terminator
-
-    // debug
-    // cout
-    // <<
-    // "executing
-    // "
-    // <<
-    // executableName
-    // <<
-    // "
-    // with
-    // args:
-    // ";
-    // for
-    // (int
-    // i =
-    // 1;
-    // i <
-    // executableArgs.size()
-    // -
-    // 1;
-    // i++)
-    // {
-    //     cout << executableArgs.at(i) << " ";
-    // }
-    // cout
-    // <<
-    // '\n'
-    // <<
-    // "Redirecting
-    // output
-    // to
-    // "
-    // <<
-    // cmd.getOutputRedirect().value_or("
-    // <none>
-    // ")
-    // <<
-    // endl;
-
-    return make_pair(executableName.c_str(), executableArgs.data());
 }
 
 void Executor::handleRedirect(const Command& cmd) {
@@ -156,7 +110,7 @@ void Executor::registerSignalHangler() {
 
 void Executor::reapChildren(int signum) {
     pid_t currPid;
-    while ((currPid = waitpid(-1, nullptr, 0)) != -1) {
+    while ((currPid = waitpid(-1, nullptr, WNOHANG)) > 0) {
         std::string str = "Reaped chiled with pid: " + std::to_string(currPid) + "\n";
         str.shrink_to_fit();
         char* buf = str.data();

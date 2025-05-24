@@ -45,7 +45,6 @@ bool splitJobs(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& r
 
         tempIterator = std::next(sliceEnd, currMatch.length());
         regexIterBeg = std::next(regexIterBeg);
-        std::cout << "temp " << std::distance(iterBeg, tempIterator);
     }
 
     if (tempIterator != iterEnd) {

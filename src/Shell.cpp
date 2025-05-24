@@ -21,7 +21,6 @@ void Shell::run() {
     using namespace std;
 
     while (true) {
-        std::cout << "\nprompt display\n";
         displayPrompt();
         string line = readInput();
 
@@ -41,7 +40,16 @@ void Shell::run() {
         }
 
         for (const auto& command : commands) {
-            executor->execute(*command);
+            try {
+                executor->execute(*command);
+                cout << "finished" << endl;
+            } catch (exception& e) {
+                cerr << "error: " << e.what();
+                continue;
+            } catch (...) {
+                cerr << "unknown exception";
+                continue;
+            }
         }
     }
 }
