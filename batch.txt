@@ -1,0 +1,4 @@
+path /bin
+ls -la > text.txt
+sleep 5 & cat text.txt
+
