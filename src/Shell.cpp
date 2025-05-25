@@ -50,8 +50,8 @@ void Shell::run() {
         displayPrompt();
         const string& line = readInput();
 
-        if (line.empty()) {
-            continue;
+        if (line.find_first_not_of(Parser::spaceSymbols) == string::npos) {
+            continue;  // Skip empty lines
         }
 
         handleInputLine(line);
@@ -77,7 +77,6 @@ void Shell::run(const std::string& filename) {
         if (line.empty()) {
             continue;
         }
-        cout << "1" << line << "1" << '\n';
         handleInputLine(line);
     }
 }
@@ -93,10 +92,10 @@ void Shell::handleInputLine(const std::string& line) {
     try {
         commands = parser->parse(line);
     } catch (exception& e) {
-        cerr << "error: " << e.what();
+        cerr << "error: " << e.what() << '\n';
         return;
     } catch (...) {
-        cerr << "unknown exception";
+        cerr << "unknown exception" << '\n';
         return;
     }
 
@@ -104,10 +103,10 @@ void Shell::handleInputLine(const std::string& line) {
         try {
             executor->execute(*command);
         } catch (exception& e) {
-            cerr << "error: " << e.what();
+            cerr << "error: " << e.what() << '\n';
             continue;
         } catch (...) {
-            cerr << "unknown exception";
+            cerr << "unknown exception" << '\n';
             continue;
         }
     }

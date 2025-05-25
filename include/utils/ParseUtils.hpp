@@ -59,9 +59,9 @@ bool isPresent(InIt beg, InIt end, const std::regex& regex, size_t maxOccurance 
  * @return true if the input ends with a delimiter match (no trailing segment), false otherwise.
  */
 template <typename InIt, typename OutIt, typename F>
-bool splitByRegex(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& regex,
-                  F binFunc) {  // rename
+bool splitByRegex(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& regex, F binFunc) {
     auto tempIterator = iterBeg;
+
     std::sregex_iterator regexIterBeg = std::sregex_iterator(iterBeg, iterEnd, regex);
     std::sregex_iterator regexIterEnd = std::sregex_iterator{};
 
@@ -71,7 +71,9 @@ bool splitByRegex(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex
         const std::smatch& currMatch = *regexIterBeg;
         auto sliceEnd = std::next(iterBeg, currMatch.position());
 
-        *outputIter++ = binFunc(tempIterator, sliceEnd);
+        if (std::distance(tempIterator, sliceEnd) > 0) {
+            *outputIter++ = binFunc(tempIterator, sliceEnd);
+        }
 
         tempIterator = std::next(sliceEnd, currMatch.length());
         regexIterBeg = std::next(regexIterBeg);

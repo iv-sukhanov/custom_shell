@@ -36,6 +36,9 @@ class Parser {
      */
     std::vector<std::unique_ptr<Command>> parse(const std::string&);
 
+    /// @brief String containing whitespace and space-like symbols for parsing.
+    static std::string spaceSymbols;
+
    private:
     /**
      * @brief Composes a Command object from the given job string.
@@ -51,7 +54,4 @@ class Parser {
 
     /// @brief Regular expression for detecting output redirection symbols.
     static std::regex redirectSymb;
-
-    /// @brief String containing whitespace and space-like symbols for parsing.
-    static std::string spaceSymbols;
 };
