@@ -1,14 +1,21 @@
-#include <algorithm>
-#include <iostream>
-#include <iterator>
-#include <string>
-#include <vector>
+/**
+ * @file main.cpp
+ * @brief Main entry point for the shell application
+ * @author Sukhanov Ivan
+ * @date 25/5/2025
+ * @version 1.0
+ */
 
-#include "Command.hpp"
-#include "Executor.hpp"
-#include "Parser.hpp"
+#include <iostream>
+
 #include "Shell.hpp"
 
+/**
+ * @brief Main function that initializes and runs the shell.
+ * @param argc Argument count.
+ * @param argv Argument vector containing command-line arguments.
+ * @return int Exit status of the program.
+ */
 int main(int argc, char** argv) {
     Shell shell;
 
@@ -17,9 +24,8 @@ int main(int argc, char** argv) {
     } else if (argc == 2) {
         shell.run(argv[1]);
     } else {
-        std::cout
-            << "Incorrect usage.\n\tcorrect usage:\n\t'ishell' for interactive mode or 'ishell <filepath>' "
-               "for batch mode";
+        std::cout << "Incorrect usage.\n\tcorrect usage:\n\t'" << argv[0] << "' for interactive mode or '"
+                  << argv[0] << " <filepath>' for batch mode" << std::endl;
     }
 
     return 0;

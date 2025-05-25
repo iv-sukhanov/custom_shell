@@ -11,6 +11,7 @@
 #pragma once
 
 #include <algorithm>
+#include <string>
 
 /// @brief Namespace for utility functions.
 namespace utils {
