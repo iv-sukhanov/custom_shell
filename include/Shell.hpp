@@ -29,14 +29,10 @@
  */
 class Shell {
    public:
-    /**
-     * @brief Constructs a new Shell instance.
-     */
+    /// @brief Constructs a new Shell instance.
     Shell();
 
-    /**
-     * @brief Runs the shell interactively.
-     */
+    /// @brief Runs the shell interactively.
     void run();
 
     /**
@@ -46,9 +42,7 @@ class Shell {
     void run(const std::string& filename);
 
    private:
-    /**
-     * @brief The prompt title displayed to the user.
-     */
+    /// @brief The prompt title displayed to the user.
     static const char* PROMPT_TITLE;
 
     /**
@@ -63,18 +57,12 @@ class Shell {
      */
     static std::string readInput();
 
-    /**
-     * @brief Displays the shell prompt to the user.
-     */
+    /// @brief Displays the shell prompt to the user.
     static void displayPrompt();
 
-    /**
-     * @brief Parser for interpreting user input.
-     */
+    /// @brief Parser for interpreting user input.
     std::unique_ptr<Parser> parser;
 
-    /**
-     * @brief Executor for running parsed commands.
-     */
+    /// @brief Executor for running parsed commands.
     std::unique_ptr<Executor> executor;
 };

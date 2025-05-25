@@ -52,8 +52,8 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
     // split the input line into jobs based on the parallel execution symbol
     vector<string> jobs;
     auto retrieveStringFromIters([](auto it1, auto it2) { return string{it1, it2}; });
-    bool isLastParallel =
-        utils::splitJobs(begin(line), end(line), back_inserter(jobs), parallelSymb, retrieveStringFromIters);
+    bool isLastParallel = utils::splitByRegex(begin(line), end(line), back_inserter(jobs), parallelSymb,
+                                              retrieveStringFromIters);
 
     // parse each job into a Command object
     vector<unique_ptr<Command>> parsedCommands;
@@ -64,7 +64,7 @@ std::vector<std::unique_ptr<Command>> Parser::parse(const std::string& line) {
         bool inParallel = i < numberOfJobs - 1 || isLastParallel;
         bool withRedirection;
         try {
-            withRedirection = utils::isRedirected(begin(job), end(job), redirectSymb);
+            withRedirection = utils::isPresent(begin(job), end(job), redirectSymb);
         } catch (invalid_argument& e) {
             throw e;
         }
@@ -92,7 +92,7 @@ std::unique_ptr<Command> Parser::composeCommand(const std::string& job, bool red
     if (redirect) {
         pair<string, string> commandWithRedirection;
         try {
-            commandWithRedirection = utils::separateRedirection(begin(job), end(job), redirectSymb);
+            commandWithRedirection = utils::cleaveByRegex(begin(job), end(job), redirectSymb);
         } catch (invalid_argument& e) {
             throw e;
         }
@@ -107,7 +107,7 @@ std::unique_ptr<Command> Parser::composeCommand(const std::string& job, bool red
     // split the job into command pieces (words, arguments, etc.)
     const string& command = redirect ? commandAndRedirection->first : job;
     vector<string> pieces;
-    utils::splitArgs(command, back_inserter(pieces));
+    utils::splitRespectingQuotes(command, back_inserter(pieces));
 
     // combine the command pieces into a Command object
     unique_ptr<Command> currCommand(
