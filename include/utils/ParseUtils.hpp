@@ -16,19 +16,81 @@
 /// @brief Namespace for utility functions.
 namespace utils {
 
+/// @brief Utility class for parsing
+class ParseUtils {
+   public:
+    /**
+     * @brief Checks if a regex pattern is present in the given input range and does not exceed the maximum
+     * allowed occurrences.
+     *
+     * @tparam InIt Input iterator type.
+     * @param beg Iterator to the beginning of the input range.
+     * @param end Iterator to the end of the input range.
+     * @param regex The regular expression to search for.
+     * @param maxOccurance The maximum allowed number of occurrences.
+     * @return true if the pattern is present at least once and does not exceed maxOccurance, false otherwise.
+     * @throws std::invalid_argument if the number of occurrences exceeds maxOccurance.
+     */
+    template <typename InIt>
+    static bool isPresent(InIt beg, InIt end, const std::regex& regex, size_t maxOccurance = 1);
+
+    /**
+     * @brief Splits an input range by a regex pattern, applies a binary function to each split, and writes
+     * the results to an output iterator.
+     *
+     * @tparam InIt Input iterator type.
+     * @tparam OutIt Output iterator type.
+     * @tparam F Binary function type to apply to each split.
+     * @param iterBeg Iterator to the beginning of the input range.
+     * @param iterEnd Iterator to the end of the input range.
+     * @param outputIter Output iterator to write results.
+     * @param regex The regular expression to split by.
+     * @param binFunc Binary function to apply to each split segment.
+     * @return true if the input ends with the pattern, false otherwise.
+     */
+    template <typename InIt, typename OutIt, typename F>
+    static bool splitByRegex(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& regex,
+                             F binFunc);
+
+    /**
+     * @brief Splits a string into tokens, respecting quoted substrings (single or double quotes).
+     *
+     * @tparam OutIt Output iterator type.
+     * @param input The input string to split.
+     * @param outputIter Output iterator to write tokens.
+     */
+    template <typename OutIt>
+    static void splitRespectingQuotes(const std::string& input, OutIt outputIter);
+
+    /**
+     * @brief Splits an input range into two substrings at the first match of a regex pattern.
+     *
+     * @tparam InIt Input iterator type.
+     * @param iter Iterator to the beginning of the input range.
+     * @param iterEnd Iterator to the end of the input range.
+     * @param regex The regular expression to split by.
+     * @return std::pair<std::string, std::string> Pair of substrings before and after the regex match.
+     * @throws std::invalid_argument if the regex does not match exactly once.
+     */
+    template <typename InIt>
+    static std::pair<std::string, std::string> cleaveByRegex(InIt iter, InIt iterEnd,
+                                                             const std::regex& regex);
+};
+
 /**
- * @brief Checks if the input contains a number of matches for the given regex up to a maximum occurrence.
+ * @brief Checks if a regex pattern is present in the given input range and does not exceed the maximum
+ * allowed occurrences.
  *
  * @tparam InIt Input iterator type.
- * @param beg Iterator to the beginning of the input.
- * @param end Iterator to the end of the input.
- * @param regex Regular expression to search for.
- * @param maxOccurance Maximum allowed number of matches (default is 1).
- * @return true if at least one match is found and does not exceed maxOccurance, false otherwise.
- * @throws std::invalid_argument if the number of matches exceeds maxOccurance.
+ * @param beg Iterator to the beginning of the input range.
+ * @param end Iterator to the end of the input range.
+ * @param regex The regular expression to search for.
+ * @param maxOccurance The maximum allowed number of occurrences.
+ * @return true if the pattern is present at least once and does not exceed maxOccurance, false otherwise.
+ * @throws std::invalid_argument if the number of occurrences exceeds maxOccurance.
  */
 template <typename InIt>
-bool isPresent(InIt beg, InIt end, const std::regex& regex, size_t maxOccurance = 1) {
+bool ParseUtils::isPresent(InIt beg, InIt end, const std::regex& regex, size_t maxOccurance) {
     std::sregex_iterator regexIterBeg = std::sregex_iterator(beg, end, regex);
     size_t occuranceNumb = std::distance(regexIterBeg, {});
 
@@ -42,24 +104,22 @@ bool isPresent(InIt beg, InIt end, const std::regex& regex, size_t maxOccurance 
 }
 
 /**
- * @brief Splits a range using a regex delimiter and applies a binary function to each segment.
+ * @brief Splits an input range by a regex pattern, applies a binary function to each split, and writes the
+ * results to an output iterator.
  *
- * Iterates over the input range, splitting it at each match of the given regex. For each segment,
- * the provided binary function is called with iterators to the segment's start and end, and the result
- * is written to the output iterator. Returns true if the input ends with a delimiter match, false otherwise.
- *
- * @tparam InIt Input iterator type (must be compatible with std::sregex_iterator).
+ * @tparam InIt Input iterator type.
  * @tparam OutIt Output iterator type.
- * @tparam F Callable type accepting (InIt, InIt) and returning a value to be stored in the output.
+ * @tparam F Binary function type to apply to each split.
  * @param iterBeg Iterator to the beginning of the input range.
  * @param iterEnd Iterator to the end of the input range.
- * @param outputIter Output iterator to store results.
- * @param regex Regular expression used as the delimiter.
- * @param binFunc Binary function applied to each segment.
- * @return true if the input ends with a delimiter match (no trailing segment), false otherwise.
+ * @param outputIter Output iterator to write results.
+ * @param regex The regular expression to split by.
+ * @param binFunc Binary function to apply to each split segment.
+ * @return true if the input ends with the pattern, false otherwise.
  */
 template <typename InIt, typename OutIt, typename F>
-bool splitByRegex(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& regex, F binFunc) {
+bool ParseUtils::splitByRegex(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex& regex,
+                              F binFunc) {
     auto tempIterator = iterBeg;
 
     std::sregex_iterator regexIterBeg = std::sregex_iterator(iterBeg, iterEnd, regex);
@@ -88,14 +148,14 @@ bool splitByRegex(InIt iterBeg, InIt iterEnd, OutIt outputIter, const std::regex
 }
 
 /**
- * @brief Splits a string into arguments, handling quoted substrings and escaped characters.
+ * @brief Splits a string into tokens, respecting quoted substrings (single or double quotes).
  *
  * @tparam OutIt Output iterator type.
- * @param input Input string to split.
- * @param outputIter Output iterator to store arguments.
+ * @param input The input string to split.
+ * @param outputIter Output iterator to write tokens.
  */
 template <typename OutIt>
-void splitRespectingQuotes(const std::string& input, OutIt outputIter) {
+void ParseUtils::splitRespectingQuotes(const std::string& input, OutIt outputIter) {
     std::istringstream iss{input};
     std::string tocken;
 
@@ -128,17 +188,18 @@ void splitRespectingQuotes(const std::string& input, OutIt outputIter) {
 }
 
 /**
- * @brief Separates a string into two parts based on a single regex match (typically for redirection).
+ * @brief Splits an input range into two substrings at the first match of a regex pattern.
  *
  * @tparam InIt Input iterator type.
- * @param iter Iterator to the beginning of the input.
- * @param iterEnd Iterator to the end of the input.
- * @param regex Regular expression to match the separator.
- * @return std::pair<std::string, std::string> Pair of strings split at the regex match.
+ * @param iter Iterator to the beginning of the input range.
+ * @param iterEnd Iterator to the end of the input range.
+ * @param regex The regular expression to split by.
+ * @return std::pair<std::string, std::string> Pair of substrings before and after the regex match.
  * @throws std::invalid_argument if the regex does not match exactly once.
  */
 template <typename InIt>
-std::pair<std::string, std::string> cleaveByRegex(InIt iter, InIt iterEnd, const std::regex& regex) {
+std::pair<std::string, std::string> ParseUtils::cleaveByRegex(InIt iter, InIt iterEnd,
+                                                              const std::regex& regex) {
     std::sregex_iterator regexIterBeg = std::sregex_iterator(iter, iterEnd, regex);
     std::sregex_iterator regexIterEnd{};
 

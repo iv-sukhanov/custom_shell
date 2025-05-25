@@ -22,7 +22,7 @@ namespace utils {
  * @param unwantedSynbols A string_view containing characters to be removed from both ends.
  * @return std::string The trimmed string.
  */
-std::string trim(const std::string& str, std::string_view unwantedSynbols) {
+std::string StringUtils::trim(const std::string& str, std::string_view unwantedSynbols) {
     size_t first = str.find_first_not_of(unwantedSynbols);
     if (first == std::string::npos) {
         return "";
