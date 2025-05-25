@@ -15,25 +15,26 @@
 
 #include "Shell.hpp"
 
-#include <csignal>
-#include <exception>
 #include <fstream>
 #include <iostream>
-#include <istream>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <vector>
 
-#include "Parser.hpp"
-
-/**
- * @brief Constructs a new Shell instance, initializing the parser and executor.
- */
+/// @brief Constructs a new Shell instance, initializing the parser and executor.
 Shell::Shell() {
     this->parser = std::make_unique<Parser>();
     this->executor = std::make_unique<Executor>();
 };
+
+/**
+ * @brief Constructs a new Shell instance with an executable name prompt title.
+ * @param prompt The executable name/path
+ */
+Shell::Shell(const char* prompt) : Shell() {
+    const char* lastSlash = strrchr(prompt, '/');
+
+    if ((lastSlash != nullptr) && *(lastSlash + 1) != '\0') {
+        PROMPT_TITLE = lastSlash + 1;
+    }
+}
 
 /**
  * @brief The prompt title displayed to the user.

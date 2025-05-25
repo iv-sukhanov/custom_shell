@@ -13,18 +13,6 @@
 
 #include "Parser.hpp"
 
-#include <algorithm>
-#include <ios>
-#include <iostream>
-#include <iterator>
-#include <memory>
-#include <regex>
-#include <stdexcept>
-#include <string>
-#include <string_view>
-#include <utility>
-#include <vector>
-
 #include "ParseUtils.hpp"
 #include "StringUtils.hpp"
 

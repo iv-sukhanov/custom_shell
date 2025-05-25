@@ -32,6 +32,9 @@ class Shell {
     /// @brief Constructs a new Shell instance.
     Shell();
 
+    /// @brief Constructs a new Shell instance with an executable name prompt title.
+    Shell(const char* prompt);
+
     /// @brief Runs the shell interactively.
     void run();
 

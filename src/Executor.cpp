@@ -13,21 +13,10 @@
 #include "Executor.hpp"
 
 #include <fcntl.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <unistd.h>
 
-#include <algorithm>
-#include <csignal>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
 #include <iostream>
-#include <stdexcept>
-#include <utility>
-#include <vector>
-
-#include "Command.hpp"
 
 /// @brief Constructs an Executor and registers the SIGCHLD signal handler to reap exited children.
 Executor::Executor() {

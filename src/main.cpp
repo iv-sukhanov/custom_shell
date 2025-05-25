@@ -17,7 +17,7 @@
  * @return int Exit status of the program.
  */
 int main(int argc, char** argv) {
-    Shell shell;
+    Shell shell(argv[0]);
 
     if (argc == 1) {
         shell.run();
