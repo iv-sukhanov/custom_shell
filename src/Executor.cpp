@@ -1,3 +1,15 @@
+/**
+ * @file Executor.cpp
+ * @brief File implemets Executor class
+ *
+ * Executor is responsible for executing a command. The main funciton is execute() which then does all the
+ * work. It decides if the command is built-in or external. In case of built-in, the corresponding member
+ * function is called, otherwise an external executable is called by a child process.
+ *
+ * @author Sukhanov Ivan
+ * @date 25/5/2025
+ * @version 1.0
+ */
 #include "Executor.hpp"
 
 #include <fcntl.h>
@@ -17,10 +29,15 @@
 
 #include "Command.hpp"
 
+/// @brief Constructs an Executor and registers the SIGCHLD signal handler to reap exited children.
 Executor::Executor() {
     registerSignalHangler();
 }
 
+/**
+ * @brief Executes a command, dispatching to either a builtin or external handler.
+ * @param cmd The command to execute.
+ */
 void Executor::execute(Command& cmd) {
     if (isBuiltin(cmd)) {
         executeBuiltin(cmd);
@@ -29,10 +46,20 @@ void Executor::execute(Command& cmd) {
     }
 }
 
+/**
+ * @brief Checks if a command is a builtin command.
+ * @param cmd The command to check.
+ * @return true if the command is builtin, false otherwise.
+ */
 bool Executor::isBuiltin(const Command& cmd) {
     return builtinCommands.find(cmd.getName()) != end(builtinCommands);
 }
 
+/**
+ * @brief Executes a builtin command.
+ * @param cmd The builtin command to execute.
+ * @throws std::invalid_argument if the command is not a known builtin.
+ */
 void Executor::executeBuiltin(const Command& cmd) {
     auto builtin = builtinCommands.find(cmd.getName());
     if (builtin != end(builtinCommands)) {
@@ -44,12 +71,20 @@ void Executor::executeBuiltin(const Command& cmd) {
     }
 }
 
+/**
+ * @brief Executes an external command by forking and exec'ing.
+ * @param cmd The external command to execute.
+ * @throws std::runtime_error if fork fails.
+ */
 void Executor::executeExternal(const Command& cmd) {
     using namespace std;
 
     pid_t pid = fork();
 
     if (pid == 0) {
+        // child actions
+
+        // transforming args to c-like style (char**)
         string executableName = lookupPath(cmd.getName());
         vector<string> commandArgs(cmd.getArgs());
 
@@ -62,27 +97,39 @@ void Executor::executeExternal(const Command& cmd) {
         }
         executableArgs.push_back(nullptr);  // null terminator
 
+        // handling redirect
         handleRedirect(cmd);
+
+        // executing the command
         execv(executableName.c_str(), executableArgs.data());
 
+        // if this code was reached, exec failed -> error
         std::perror("error executing the command");
         _exit(1);
     } else if (pid > 0) {
-        int status;
+        // parent actions
+
+        // we do not wait for child if the process is run in background
         if (cmd.isParallel()) {
             std::cout << "[" << cmd.getName() << "]"
                       << "[" << pid << "]"
-                      << " pushed to background"
-                      << "\n";
+                      << " pushed to background" << endl;
             return;
         }
-        waitpid(pid, &status, 0);
+
+        // otherwise wait
+        waitpid(pid, nullptr, 0);
 
     } else {
+        // if fork did not succeed
         throw runtime_error("fork: "s + strerror(errno));
     }
 }
 
+/**
+ * @brief Handles output redirection for a command.
+ * @param cmd The command whose output should be redirected.
+ */
 void Executor::handleRedirect(const Command& cmd) {
     if (const std::string& file = cmd.getOutputRedirect().value_or(""); !file.empty()) {
         const int permissions = 0644;
@@ -97,6 +144,9 @@ void Executor::handleRedirect(const Command& cmd) {
     }
 }
 
+/**
+ * @brief Registers the SIGCHLD signal handler to reap child processes.
+ */
 void Executor::registerSignalHangler() {
     struct sigaction signalAction {};
     signalAction.sa_handler = reapChildren;
@@ -108,6 +158,10 @@ void Executor::registerSignalHangler() {
     }
 }
 
+/**
+ * @brief Signal handler to reap terminated child processes.
+ * @param signum The signal number (unused).
+ */
 void Executor::reapChildren(int signum) {
     pid_t currPid;
     while ((currPid = waitpid(-1, nullptr, WNOHANG)) > 0) {
@@ -119,12 +173,19 @@ void Executor::reapChildren(int signum) {
     }
 }
 
+/**
+ * @brief Map of builtin command names to their corresponding member function pointers.
+ */
 const std::unordered_map<std::string_view, Executor::BuiltinFunction> Executor::builtinCommands = {
     {"cd", &Executor::cd},
     {"exit", &Executor::exit},
     {"path", &Executor::path},
 };
 
+/**
+ * @brief Changes the current working directory.
+ * @param cmd Arguments for the cd command (expects exactly one argument).
+ */
 void Executor::cd(const Args& cmd) {
     if (cmd.size() != 1) {
         std::cerr << "cd: wrong number of arguments\n";
@@ -136,6 +197,10 @@ void Executor::cd(const Args& cmd) {
     }
 }
 
+/**
+ * @brief Sets the executable search path.
+ * @param cmd Arguments for the path command (list of absolute paths).
+ */
 void Executor::path(const Args& cmd) {
     if (cmd.empty()) {
         searchPath.clear();
@@ -154,6 +219,11 @@ void Executor::path(const Args& cmd) {
     }
 }
 
+/**
+ * @brief Exits the shell.
+ * @param cmd Arguments for the exit command (expects none), is needed only to satisfy the function pointer in
+ * the map.
+ */
 void Executor::exit(const Args& cmd) {
     if (!cmd.empty()) {
         std::cerr << "exit: wrong number of arguments\n";
@@ -164,6 +234,11 @@ void Executor::exit(const Args& cmd) {
     std::exit(0);
 }
 
+/**
+ * @brief Looks up the full path of an executable in the search path.
+ * @param cmd The command name to look up.
+ * @return The full path to the executable if found, otherwise returns the command name.
+ */
 std::string Executor::lookupPath(const std::string& cmd) const {
     for (const auto& path : searchPath) {
         std::string fullPath = path + "/" + cmd;
