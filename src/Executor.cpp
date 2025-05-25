@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 
+#include <cassert>
 #include <cstring>
 #include <iostream>
 
@@ -152,6 +153,8 @@ void Executor::registerSignalHangler() {
  * @param signum The signal number (unused).
  */
 void Executor::reapChildren(int signum) {
+    assert(signum == SIGCHLD);
+
     pid_t currPid;
     while ((currPid = waitpid(-1, nullptr, WNOHANG)) > 0) {
         std::string str = "Reaped chiled with pid: " + std::to_string(currPid) + "\n";
@@ -229,6 +232,8 @@ void Executor::exit(const Args& cmd) {
  * @return The full path to the executable if found, otherwise returns the command name.
  */
 std::string Executor::lookupPath(const std::string& cmd) const {
+    assert(!cmd.empty());
+
     for (const auto& path : searchPath) {
         std::string fullPath = path + "/" + cmd;
         if (access(fullPath.c_str(), X_OK) == 0) {

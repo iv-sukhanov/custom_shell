@@ -11,6 +11,7 @@
 
 #include "Command.hpp"
 
+#include <cassert>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,6 +23,8 @@
  * @param args The arguments for the command.
  */
 Command::Command(const std::string& name, const std::vector<std::string>& args) {
+    assert(!name.empty());
+
     this->name = name;
     this->args = args;
 }
@@ -47,6 +50,8 @@ std::vector<std::string> Command::getArgs() const {
  * @param file The output file path.
  */
 void Command::setOutputRedirect(const std::string& file) {
+    assert(!file.empty());
+
     this->outputFile = file;
 }
 

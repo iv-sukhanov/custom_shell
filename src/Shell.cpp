@@ -15,6 +15,7 @@
 
 #include "Shell.hpp"
 
+#include <cassert>
 #include <fstream>
 #include <iostream>
 
@@ -29,6 +30,8 @@ Shell::Shell() {
  * @param prompt The executable name/path
  */
 Shell::Shell(const char* prompt) : Shell() {
+    assert(prompt != nullptr);
+
     const char* lastSlash = strrchr(prompt, '/');
 
     if ((lastSlash != nullptr) && *(lastSlash + 1) != '\0') {
@@ -64,6 +67,8 @@ void Shell::run() {
  * @param filename The path to the file containing shell commands.
  */
 void Shell::run(const std::string& filename) {
+    assert(!filename.empty());
+
     using namespace std;
 
     fstream file{filename, std::ios::in};
@@ -101,6 +106,8 @@ void Shell::handleInputLine(const std::string& line) {
     }
 
     for (const auto& command : commands) {
+        assert(command);
+
         try {
             executor->execute(*command);
         } catch (exception& e) {
